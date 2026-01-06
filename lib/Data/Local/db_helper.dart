@@ -19,7 +19,7 @@ class DbHelper {
 
 
 
-
+   /// ( Create global Variable)
    Database? mydb;
 
    /// ( path if -> exist  then open else create db)
@@ -60,6 +60,14 @@ class DbHelper {
     });
     return rowsEffected>0;
    }
+
+   Future<List<Map<String,dynamic>>> getAllNote()async{
+    var db=await getDB();
+    List<Map<String,dynamic>> mData= await db.query(TABLE_NOTE);
+    return mData;
+   }
+
+
 
 
 }
