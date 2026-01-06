@@ -5,69 +5,87 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
 class DbHelper {
+  DbHelper._();
 
-   DbHelper._();
-   static final DbHelper getinstance=DbHelper._();
-   ///table note
-   static final String TABLE_NOTE="note";
-   static final String COLUMN_SNO="s_no";
-   static final String COLUMN_TITLE="title";
-   static final String COLUMN_DESC="desc";
+  static final DbHelper getinstance = DbHelper._();
 
+  ///table note
+  static final String TABLE_NOTE = "note";
+  static final String COLUMN_SNO = "s_no";
+  static final String COLUMN_TITLE = "title";
+  static final String COLUMN_DESC = "desc";
 
+  /// ( Create global Variable)
+  Database? mydb;
 
-
-
-
-   /// ( Create global Variable)
-   Database? mydb;
-
-   /// ( path if -> exist  then open else create db)
-  Future<Database> getDB()async{
-    if(mydb!=null){
+  /// ( path if -> exist  then open else create db)
+  Future<Database> getDB() async {
+    if (mydb != null) {
       return mydb!;
-    }else {
-      mydb=await openDB();
+    } else {
+      mydb = await openDB();
       return mydb!;
-
     }
   }
 
-  Future<Database> openDB()async{
-    Directory appDir= await getApplicationDocumentsDirectory();
-    String dbpath=join(appDir.path,"note.db");
-    return await openDatabase(dbpath,onCreate: (db,version){
-
-
-      /// creat all your table here
-      db.execute("create table $TABLE_NOTE($COLUMN_SNO INTEGER PRIMARY KEY AUTOINCREMENT,$COLUMN_TITLE TEXT,$COLUMN_DESC TEXT) ");
-
-
-    },version: 1);
-    
+  Future<Database> openDB() async {
+    Directory appDir = await getApplicationDocumentsDirectory();
+    String dbpath = join(appDir.path, "note.db");
+    return await openDatabase(
+      dbpath,
+      onCreate: (db, version) {
+        /// creat all your table here
+        db.execute(
+          "create table $TABLE_NOTE($COLUMN_SNO INTEGER PRIMARY KEY AUTOINCREMENT,$COLUMN_TITLE TEXT,$COLUMN_DESC TEXT) ",
+        );
+      },
+      version: 1,
+    );
   }
 
-
   ///  all queries
- /// insert data in table
+  /// insert data in table
 
-   Future<bool>addNote({required String mTitle, required String mDesc})async{
-    var db=await getDB();
-    int rowsEffected=await db.insert(TABLE_NOTE,{
-      COLUMN_TITLE:mTitle,
-      COLUMN_DESC:mDesc,
-
+  Future<bool> addNote({required String mTitle, required String mDesc}) async {
+    var db = await getDB();
+    int rowsEffected = await db.insert(TABLE_NOTE, {
+      COLUMN_TITLE: mTitle,
+      COLUMN_DESC: mDesc,
     });
-    return rowsEffected>0;
-   }
+    return rowsEffected > 0;
+  }
 
-   Future<List<Map<String,dynamic>>> getAllNote()async{
-    var db=await getDB();
-    List<Map<String,dynamic>> mData= await db.query(TABLE_NOTE);
+  /// read all data from table
+  Future<List<Map<String, dynamic>>> getAllNote() async {
+    var db = await getDB();
+    List<Map<String, dynamic>> mData = await db.query(TABLE_NOTE);
     return mData;
-   }
+  }
 
+  /// update data in table
+  Future<bool> updateNote({
+    required String mTitle,
+    required String mDesc,
+    required int sno,
+  }) async {
+    var db = await getDB();
+    int rowsEffected = await db.update(
+      TABLE_NOTE,
+      {COLUMN_TITLE: mTitle, COLUMN_DESC: mDesc},
+      where: "$COLUMN_SNO = ?",
+      whereArgs: [sno],
+    );
+    return rowsEffected > 0;
+  }
 
-
-
+  /// delete data in table
+  Future<bool> deleteNote({required int sno}) async {
+    var db = await getDB();
+    int rowsEffected = await db.delete(
+      TABLE_NOTE,
+      where: "$COLUMN_SNO = ?",
+      whereArgs: [sno],
+    );
+    return rowsEffected > 0;
+  }
 }
